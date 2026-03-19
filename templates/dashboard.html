@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CDSS – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface2: #162032;
+    --border: #1e2d45;
+    --teal: #0d9488;
+    --teal-light: #14b8a6;
+    --teal-glow: rgba(13,148,136,0.15);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --green: #10b981;
+    --purple: #a78bfa;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,17,32,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 12px; }
+  .nav-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(13,148,136,0.35);
+  }
+  .nav-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); }
+  .nav-title span { color: var(--teal-light); }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    padding: 7px 16px; border-radius: 8px;
+    color: var(--muted); font-size: 13px; font-weight: 500;
+    text-decoration: none; transition: background 0.2s, color 0.2s;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .user-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px; color: var(--muted);
+  }
+  .user-badge strong { color: var(--teal-light); }
+  .btn-logout {
+    padding: 7px 16px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 8px;
+    color: #fca5a5; font-size: 13px;
+    text-decoration: none; transition: background 0.2s;
+  }
+  .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+  /* LAYOUT */
+  main { max-width: 1280px; margin: 0 auto; padding: 32px 28px 60px; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 20px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  .stat-card:nth-child(2) { animation-delay: 0.06s; }
+  .stat-card:nth-child(3) { animation-delay: 0.12s; }
+  .stat-card:nth-child(4) { animation-delay: 0.18s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.patients::after { background: linear-gradient(90deg, var(--teal), var(--teal-light)); }
+  .stat-card.revenue::after  { background: linear-gradient(90deg, var(--green), #6ee7b7); }
+  .stat-card.pending::after  { background: linear-gradient(90deg, var(--amber), #fde68a); }
+  .stat-card.overdue::after  { background: linear-gradient(90deg, var(--red), #fca5a5); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 10px; }
+  .stat-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
+  .stat-value.teal  { color: var(--teal-light); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.red   { color: var(--red); }
+  .stat-icon { position: absolute; right: 18px; top: 18px; font-size: 22px; opacity: 0.35; }
+
+  /* SECTIONS */
+  .section { margin-bottom: 36px; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); }
+  .section-title span { color: var(--teal-light); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; margin-left: 10px; background: var(--teal-glow); border: 1px solid rgba(13,148,136,0.3); padding: 2px 8px; border-radius: 20px; vertical-align: middle; }
+
+  /* TABLE */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: 14px 18px; text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody td { padding: 14px 18px; font-size: 14px; vertical-align: middle; }
+  .patient-name { font-weight: 600; color: var(--text); }
+  .patient-age { color: var(--muted); font-size: 13px; }
+  .disease-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    background: var(--teal-glow);
+    border: 1px solid rgba(13,148,136,0.3);
+    color: var(--teal-light);
+  }
+  .actions { display: flex; gap: 6px; }
+  .btn-ai {
+    padding: 5px 12px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    border-radius: 7px;
+    color: #fff; font-size: 12px; font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 2px 10px rgba(13,148,136,0.3);
+  }
+  .btn-ai:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-del {
+    padding: 5px 10px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 7px;
+    color: #fca5a5; font-size: 12px;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-del:hover { background: rgba(239,68,68,0.2); }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    text-transform: capitalize;
+  }
+  .badge.paid    { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+  .badge.pending { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fde68a; }
+  .badge.overdue { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+
+  /* FORMS */
+  .form-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 22px;
+    margin-bottom: 16px;
+  }
+  .form-panel h3 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 140px; }
+  .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .form-group input, .form-group select {
+    width: 100%; padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
+  .form-group select option { background: #1e293b; }
+  .btn-submit {
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    border: none; border-radius: 8px;
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; align-self: flex-end;
+    box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* STATUS CHANGE LINKS */
+  .status-links { display: flex; gap: 4px; flex-wrap: wrap; }
+  .status-link {
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 11px; text-decoration: none; color: var(--muted);
+    border: 1px solid var(--border);
+    transition: background 0.2s, color 0.2s;
+  }
+  .status-link:hover { background: var(--surface2); color: var(--text); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+    .form-row { flex-direction: column; }
+  }
+  @media (max-width: 500px) {
+    .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-icon">🏥</div>
+    <div class="nav-title">CDSS <span>Dashboard</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#patients" class="nav-link">Patients</a>
+    <a href="#billing" class="nav-link">Billing</a>
+  </div>
+  <div class="nav-right">
+    <div class="user-badge">Signed in as <strong>{{ username }}</strong></div>
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card patients">
+      <div class="stat-icon">👤</div>
+      <div class="stat-label">Total Patients</div>
+      <div class="stat-value teal">{{ patient_count }}</div>
+    </div>
+    <div class="stat-card revenue">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Revenue Collected</div>
+      <div class="stat-value green">₹{{ "{:,.0f}".format(total_revenue) }}</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-label">Pending Dues</div>
+      <div class="stat-value amber">₹{{ "{:,.0f}".format(pending_amount) }}</div>
+    </div>
+    <div class="stat-card overdue">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-label">Overdue Bills</div>
+      <div class="stat-value red">₹{{ "{:,.0f}".format(overdue_amount) }}</div>
+    </div>
+  </div>
+
+  <!-- PATIENTS -->
+  <div class="section" id="patients">
+    <div class="section-header">
+      <div class="section-title">Patient Registry <span>{{ patient_count }} records</span></div>
+    </div>
+
+    <div class="form-panel">
+      <h3>➕ Add New Patient</h3>
+      <form method="post" action="/patients/add">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="e.g. Riya Kapoor" required/>
+          </div>
+          <div class="form-group" style="max-width:100px;">
+            <label>Age</label>
+            <input type="number" name="age" min="1" max="120" placeholder="35" required/>
+          </div>
+          <div class="form-group">
+            <label>Primary Disease</label>
+            <input type="text" name="disease" placeholder="e.g. Diabetes" required/>
+          </div>
+          <button class="btn-submit" type="submit">Add Patient</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Age</th>
+            <th>Diagnosis</th>
+            <th>Admitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in patients %}
+          <tr>
+            <td><span class="patient-name">{{ p.name }}</span></td>
+            <td><span class="patient-age">{{ p.age }} yrs</span></td>
+            <td><span class="disease-tag">{{ p.disease }}</span></td>
+            <td style="color:var(--muted); font-size:13px;">{{ p.created_at }}</td>
+            <td>
+              <div class="actions">
+                <a href="/patients/{{ p.id }}/ai" class="btn-ai">🧠 AI Suggest</a>
+                <a href="/patients/delete/{{ p.id }}" class="btn-del" onclick="return confirm('Delete this patient?')">✕</a>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:30px;">No patients found. Add one above.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BILLING -->
+  <div class="section" id="billing">
+    <div class="section-header">
+      <div class="section-title">Billing Ledger <span>{{ bills|length }} entries</span></div>
+    </div>
+
+    <div class="form-panel">
+      <h3>➕ Add New Bill</h3>
+      <form method="post" action="/billing/add">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Patient</label>
+            <select name="patient_id" required>
+              <option value="">— Select —</option>
+              {% for p in patients %}
+              <option value="{{ p.id }}">{{ p.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" style="max-width:130px;">
+            <label>Amount (₹)</label>
+            <input type="number" name="amount" step="0.01" placeholder="1500" required/>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" name="description" placeholder="e.g. Lab Tests"/>
+          </div>
+          <div class="form-group" style="max-width:120px;">
+            <label>Status</label>
+            <select name="status">
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+          <button class="btn-submit" type="submit">Add Bill</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Change Status</th>
+            <th>Del</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for b in bills %}
+          <tr>
+            <td style="font-weight:600;">{{ b.patient_name }}</td>
+            <td style="color:var(--muted); font-size:13px;">{{ b.description }}</td>
+            <td style="font-weight:600; color:var(--text);">₹{{ "{:,.2f}".format(b.amount) }}</td>
+            <td style="color:var(--muted); font-size:13px;">{{ b.created_at }}</td>
+            <td><span class="badge {{ b.status }}">{{ b.status }}</span></td>
+            <td>
+              <div class="status-links">
+                <a href="/billing/status/{{ b.id }}/paid"    class="status-link">Paid</a>
+                <a href="/billing/status/{{ b.id }}/pending" class="status-link">Pending</a>
+                <a href="/billing/status/{{ b.id }}/overdue" class="status-link">Overdue</a>
+              </div>
+            </td>
+            <td><a href="/billing/delete/{{ b.id }}" class="btn-del" onclick="return confirm('Delete this bill?')">✕</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" style="text-align:center; color:var(--muted); padding:30px;">No bills found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>
