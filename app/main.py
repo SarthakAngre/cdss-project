@@ -14,8 +14,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")templates = Jinja2Templates(directory="templates")
+from fastapi.staticfiles import StaticFiles
 
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 # Include routers
 app.include_router(auth.router)
 app.include_router(patients.router)
